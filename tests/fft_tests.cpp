@@ -1,6 +1,5 @@
 #include "impl/FFT_impl.h"
 #include "FFT.h"
-#include <iostream>
 
 
 int main()

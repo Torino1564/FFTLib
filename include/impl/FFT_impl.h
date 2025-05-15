@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "Complex.h"
 
 namespace fft::impl

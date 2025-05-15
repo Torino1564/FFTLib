@@ -2,7 +2,6 @@
 // or project specific include files.
 
 #pragma once
-#include <vector>
 #include "Complex.h"
 
 namespace fft
