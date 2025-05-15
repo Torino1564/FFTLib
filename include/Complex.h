@@ -9,7 +9,7 @@ namespace fft
 	{
 	public:
 		// Constructors
-		Complex(T absolute_value, T phase);
+		Complex(T absolute_value, T phase = 0);
 		Complex() = default;
 		static Complex ReIm(T real_part, T imaginary_part);
 
@@ -23,16 +23,16 @@ namespace fft
 
 
 		// Operators
-		T Conj() const noexcept;
+		Complex<T> Conj() const noexcept;
 
-		T operator+(const Complex& rhs);
-		T operator-(const Complex& rhs);
-		T operator*(const Complex& rhs);
-		T operator/(const Complex& rhs);
-		T operator==(const Complex& rhs);
-		T operator*(const T& rhs);
+		Complex<T> operator+(const Complex& rhs);
+		Complex<T> operator-(const Complex& rhs);
+		Complex<T> operator*(const Complex& rhs);
+		Complex<T> operator/(const Complex& rhs);
+		Complex<T> operator==(const Complex& rhs);
+		Complex<T> operator*(const T& rhs);
 
-		T operator^(int exponent);
+		Complex<T> operator^(int exponent);
 
 	private:
 		T absolute_value = 1;
@@ -92,13 +92,13 @@ namespace fft
 	}
 
 	template <typename T>
-	T Complex<T>::Conj() const noexcept
+	Complex<T> Complex<T>::Conj() const noexcept
 	{
 		return Complex(Abs(), -Phase());
 	}
 
 	template <typename T>
-	T Complex<T>::operator+(const Complex& rhs)
+	Complex<T> Complex<T>::operator+(const Complex& rhs)
 	{
 		const auto real1 = Re();
 		const auto im1 = Im();
@@ -112,31 +112,31 @@ namespace fft
 	}
 
 	template <typename T>
-	T Complex<T>::operator-(const Complex& rhs)
+	Complex<T> Complex<T>::operator-(const Complex& rhs)
 	{
 		return operator+(rhs.Conj());
 	}
 
 	template <typename T>
-	T Complex<T>::operator*(const Complex& rhs)
+	Complex<T> Complex<T>::operator*(const Complex& rhs)
 	{
-		return Complex(Abs() * rhs.Abs(), Phase() + rhs.Phase());
+		return Complex<T>(Abs() * rhs.Abs(), Phase() + rhs.Phase());
 	}
 
 	template <typename T>
-	T Complex<T>::operator/(const Complex& rhs)
+	Complex<T> Complex<T>::operator/(const Complex& rhs)
 	{
 		return Complex(Abs() / rhs.Abs(), Phase() - rhs.Phase());
 	}
 
 	template <typename T>
-	T Complex<T>::operator==(const Complex& rhs)
+	Complex<T> Complex<T>::operator==(const Complex& rhs)
 	{
 		return Abs() == rhs.Abs() && Phase() == rhs.Phase();
 	}
 
 	template <typename T>
-	T Complex<T>::operator*(const T& rhs)
+	Complex<T> Complex<T>::operator*(const T& rhs)
 	{
 		const auto new_absolute_value = Abs() * rhs;
 		auto new_phase = Phase();
@@ -148,7 +148,7 @@ namespace fft
 	}
 
 	template <typename T>
-	T Complex<T>::operator^(int exponent)
+	Complex<T> Complex<T>::operator^(int exponent)
 	{
 		return Complex(Abs(), Phase() * exponent);
 	}

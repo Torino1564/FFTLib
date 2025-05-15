@@ -4,27 +4,26 @@
 
 namespace fft::impl
 {
-	bool AssertPowerOf2(const std::vector<double>& data);
+	bool IsPowerOf2(size_t n);
+
+	Complex<float>* CalculateTwiddleFactors(const uint64_t numSamples);
 
 	template <typename T>
-	std::vector<Complex<T>> CalculateTwiddleFactors(const uint64_t numSamples)
-	{
-		std::vector<Complex<T>> vec;
-
-		vec.resize((numSamples / 2) - 1);
-
-		for (uint64_t i = 0; i < (numSamples / 2) - 1; i++)
-		{
-			vec[i] = Complex<T>(1, 2 * M_PI * i / numSamples);
-		}
-
-		return vec;
-	}
-
-	template <typename T>
-	T BitRev(const T input)
+	T BitRev(const T input, size_t numBits = sizeof(T) * 8)
 	{
 		// TODO: Implement BitReverse
-		return T();
+		T result = 0;
+		for (unsigned int n = 0; n < numBits / 2; n++)
+		{
+			T fromRight = input & (0b1 << n);
+			T shiftedFromRight = fromRight <<  numBits - (2*n + 1);
+
+			T fromLeft = input & (0b1 << numBits - 1 - n);
+			T shiftedFromLeft = fromLeft >> numBits - (2*n + 1);
+
+			result ^= shiftedFromLeft ^ shiftedFromRight;
+		}
+
+		return result;
 	}
 }

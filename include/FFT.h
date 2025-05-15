@@ -7,5 +7,5 @@
 
 namespace fft
 {
-	std::vector<double> ComputeFFT(const std::vector<double>& input);
+	void Compute(Complex<float>* in, Complex<float>* out, size_t n);
 }

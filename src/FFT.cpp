@@ -9,7 +9,7 @@ namespace
 
 namespace fft
 {
-	std::vector<double> ComputeFFT(const std::vector<double>& input)
+	void Compute(Complex<float>* in, Complex<float>* out, const size_t n)
 	{
 		/* Data conditioning:
 		 * - This first part makes sure the input values are a power of 2
@@ -17,23 +17,19 @@ namespace fft
 		 * - Properly orders the data
 		*/
 
-		auto data = input;
-
-		if (impl::AssertPowerOf2(data))
+		if (!impl::IsPowerOf2(n))
 		{
 			throw std::exception{ "Data was not of size 2*N" };
 		}
 
-		const uint64_t numSamples = data.size();
+		const auto gamma = (uint32_t)log(n);
 
-		const auto gamma = log2(numSamples);
-
-		const auto W = impl::CalculateTwiddleFactors<double>(numSamples);
+		const auto W = impl::CalculateTwiddleFactors(n);
 
 		// Initialize loop variables
 
 		uint32_t gr = 1;
-		auto butterflyCount = numSamples / 2;
+		auto butterflyCount = n / 2;
 
 		for (unsigned stage = 0; stage < gamma; stage++)
 		{
@@ -41,10 +37,26 @@ namespace fft
 			{
 				for (unsigned butterfly = 0; butterfly < butterflyCount; butterfly++)
 				{
-					auto A = data[butterfly + 2 * butterflyCount * group];
-					auto B = data[butterfly + 2 * butterflyCount * group + (numSamples/2^stage)];
-					auto C = W[impl::BitRev(1)];
+					auto A = in[butterfly + 2 * butterflyCount * group];
+					auto B = in[butterfly + 2 * butterflyCount * group + (n/2^stage)];
+					auto C = W[impl::BitRev(2 * (group), gamma) + 1];
+					auto T = B * C;
+
+					in[butterfly + 2 * butterflyCount * (group )] = A + T;
+					in[butterfly + 2 * butterflyCount * (group) + n/((int)pow(2, stage))] = A + T;
 				}
+			}
+		}
+
+		for (unsigned i = 1; i < n; i++)
+		{
+			auto g = impl::BitRev(i-1, gamma);
+			auto I = g + 1;
+			if (I > i)
+			{
+				auto temp = in[i];
+				in[i] = in[I];
+				in[I] = temp;
 			}
 		}
 	}
