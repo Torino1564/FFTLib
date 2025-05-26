@@ -1,5 +1,6 @@
 #pragma once
 #include "Complex.h"
+#include <stdint.h>
 
 namespace fft::impl
 {
@@ -21,6 +22,12 @@ namespace fft::impl
 			T shiftedFromLeft = fromLeft >> numBits - (2*n + 1);
 
 			result ^= shiftedFromLeft ^ shiftedFromRight;
+		}
+
+		if (numBits % 2 != 0)
+		{
+			auto mask = input & (0b1 << (size_t)numBits/2);
+			result ^= mask;
 		}
 
 		return result;

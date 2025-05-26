@@ -50,10 +50,10 @@ namespace fft
 	Complex<T> Complex<T>::ReIm(T real_part, T imaginary_part)
 	{
 		const auto absolute_value = sqrt((real_part * real_part) + (imaginary_part * imaginary_part));
-		auto phase = atan(abs(imaginary_part) / abs(real_part));
+		auto phase = atan(fabs(imaginary_part) / fabs(real_part));
 
 		if (real_part < 0)
-			phase += M_PI_2;
+			phase = M_PI - phase;
 
 		if (imaginary_part < 0)
 			phase *= -1;
@@ -108,19 +108,20 @@ namespace fft
 		const auto newReal = real1 + real2;
 		const auto newIm = im1 + im2;
 
-		return Complex(newReal, newIm);
-	}
-
-	template <typename T>
-	Complex<T> Complex<T>::operator-(const Complex& rhs)
-	{
-		return operator+(rhs.Conj());
+		return ReIm(newReal, newIm);
 	}
 
 	template <typename T>
 	Complex<T> Complex<T>::operator*(const Complex& rhs)
 	{
 		return Complex<T>(Abs() * rhs.Abs(), Phase() + rhs.Phase());
+	}
+
+	template <typename T>
+	Complex<T> Complex<T>::operator-(const Complex& rhs)
+	{
+		auto temp = rhs;
+		return operator+(temp * Complex<T>(1, M_PI));
 	}
 
 	template <typename T>

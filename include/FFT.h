@@ -6,5 +6,5 @@
 
 namespace fft
 {
-	void Compute(Complex<float>* in, Complex<float>* out, size_t n);
+	int Compute(Complex<float>* in, Complex<float>* out, size_t n);
 }

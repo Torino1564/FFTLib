@@ -1,6 +1,6 @@
 ﻿#include "FFT.h"
 #include "impl/FFT_impl.h"
-
+#include <array>
 // Anonymous namespace for internal linkage
 namespace
 {
@@ -9,7 +9,7 @@ namespace
 
 namespace fft
 {
-	void Compute(Complex<float>* in, Complex<float>* out, const size_t n)
+	int Compute(Complex<float>* in, Complex<float>* out, const size_t n)
 	{
 		/* Data conditioning:
 		 * - This first part makes sure the input values are a power of 2
@@ -19,46 +19,52 @@ namespace fft
 
 		if (!impl::IsPowerOf2(n))
 		{
-			throw std::exception{ "Data was not of size 2*N" };
+			return -1;
 		}
 
-		const auto gamma = (uint32_t)log(n);
+		const auto gamma = (uint32_t)log2(n);
 
 		const auto W = impl::CalculateTwiddleFactors(n);
 
 		// Initialize loop variables
 
-		uint32_t gr = 1;
-		auto butterflyCount = n / 2;
+		// Variables
+		auto GA = gamma;
+		size_t mar = n / 2;
+		size_t gr = 1;
 
-		for (unsigned stage = 0; stage < gamma; stage++)
-		{
-			for (unsigned group = 0; group < gr; group++)
-			{
-				for (unsigned butterfly = 0; butterfly < butterflyCount; butterfly++)
-				{
-					auto A = in[butterfly + 2 * butterflyCount * group];
-					auto B = in[butterfly + 2 * butterflyCount * group + (n/2^stage)];
-					auto C = W[impl::BitRev(2 * (group), gamma) + 1];
+		for (unsigned r = 1; r <= GA; ++r) {
+			for (size_t g = 0; g < gr; ++g) {
+				for (size_t m = 0; m < mar; ++m) {
+					const size_t A_index = m + 2 * mar * g;
+					const size_t B_index = A_index + n / (1u << r);
+					const auto W_index = impl::BitRev(2 * g, GA);
+
+					auto A = in[A_index];
+					auto B = in[B_index];
+					auto C = W[W_index];
+
 					auto T = B * C;
-
-					in[butterfly + 2 * butterflyCount * (group )] = A + T;
-					in[butterfly + 2 * butterflyCount * (group) + n/((int)pow(2, stage))] = A + T;
+					in[A_index] = A + T;
+					in[B_index] = A - T;
 				}
 			}
+			mar /= 2;
+			gr *= 2;
 		}
 
-		for (unsigned i = 1; i < n; i++)
-		{
-			auto g = impl::BitRev(i-1, gamma);
+		// Bit reversal reordering
+		for (size_t k = 1; k <= n; ++k) {
+			size_t g = impl::BitRev(static_cast<unsigned>(k - 1), GA);
 			auto I = g + 1;
-			if (I > i)
-			{
-				auto temp = in[i];
-				in[i] = in[I];
-				in[I] = temp;
+			if (I > k) {
+				auto temp = in[k - 1];
+				in[k - 1] = in[I - 1];
+				in[I - 1] = temp;
 			}
 		}
+
+		return 0;
 	}
 }
 
